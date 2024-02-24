@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Setup IAM User / groups
+Parameters:
+  MyUserPassword:
+    Type: String
+    Description: User developer password
+Resources:
+  AdminGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: !Sub '${AWS::AccountId}-admin'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AdministratorAccess'
+  DeveloperGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: !Sub '${AWS::AccountId}-developers'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AWSLambda_FullAccess'
+  MyUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Sub '${AWS::AccountId}-cesar'
+      LoginProfile:
+        Password: !Ref MyUserPassword
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess'
+      Tags:
+        - Key: Department
+          Value: Engineering
+  AddAdmins:
+    Type: AWS::IAM::UserToGroupAddition
+    Properties:
+      GroupName: !Ref AdminGroup
+      Users:
+        - !Ref MyUser
+  AddDevelopers:
+    Type: AWS::IAM::UserToGroupAddition
+    Properties:
+      GroupName: !Ref DeveloperGroup
+      Users:
+        - !Ref MyUser
+
+Outputs:
+  MyUserArn:
+    Value: !GetAtt MyUser.Arn
